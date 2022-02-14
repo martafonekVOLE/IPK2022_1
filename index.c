@@ -10,7 +10,7 @@
 #include <unistd.h>
 //TODO reduce ammount of #includes
 
-void getCPU(){
+float getCPU(){
     char str1[100], str2[100];
     char* first[10];
     char* second[10];
@@ -62,20 +62,24 @@ void getCPU(){
 
     float CPU_Perc = ((float)totald - (float)idled)/(float)totald;
 
-    printf("%.0f%%\n", CPU_Perc*100);              //test: top -bn2 | grep '%Cpu' | tail -1 | grep -P '(....|...) id,'|awk '{print "CPU Usage: " 100-$8 "%"}'^C
+    //printf("%.0f%%\n", CPU_Perc*100);              //test: top -bn2 | grep '%Cpu' | tail -1 | grep -P '(....|...) id,'|awk '{print "CPU Usage: " 100-$8 "%"}'^C
+    return(CPU_Perc*100);
 }
 
-void getNAME(){
-    char str[100];
+char* getNAME(){
+    char *str = malloc(sizeof(char) * 100);
     FILE* fp = fopen("/proc/sys/kernel/hostname", "r");
     fgets(str, 100, fp);
     fclose(fp);
-    fputs(str, stdout);
+    return str;
 }
 
-void CPUNAME(){
-    char str[100];
-    system("cat /proc/cpuinfo | grep 'model name' | head -n 1 | sed 's/^.*: //'");
+char* CPUNAME(){
+    char* str = malloc(sizeof(char) * 100);
+    FILE* fp = popen("cat /proc/cpuinfo | grep 'model name' | head -n 1 | sed 's/^.*: //'", "r");
+    fgets(str, 100, fp);
+    fclose(fp);
+    return str;
 }
 
 int CreateSocket(){
@@ -101,11 +105,59 @@ void establishConnection(int portno){
     listen(sock, 1);
 
     char buffer[1024];
+    int valread;
+
+    char runtime[1024] = "Server is running under port";
     while(1){
-        accept(sock, (struct sockaddr *)&address, (socklen_t*)&addrlen);        
+        int sock2 = accept(sock, (struct sockaddr *)&address, (socklen_t*)&addrlen);
+        valread = read(sock2, buffer, 1024);   
+        puts(runtime);
+        //TODO go through buffer and find "hostname"
+        char *writeIn = "HTTP/1.1 200 OK\r\nContent-Type: text/plain;\r\n\r\n";
+        char *badReq = "HTTP/1.1 400 Bad Request\r\nContent-Type: text/plain;\r\n\r\n";
+        char *hostnameFound = strstr(buffer, "hostname");
+        char *CPUloadFound = strstr(buffer, "load");
+        char *CPUnameFound = strstr(buffer, "cpu-name");
+        if(hostnameFound){
+            char* hostname = getNAME();
+            char finalHostname[1024] = " ";
+            strcpy(finalHostname, writeIn);
+            strcat(finalHostname, hostname);
+
+            send(sock2, finalHostname, strlen(finalHostname), 0);    //TODO concat str
+            free(hostname);
+            close(sock2);
+        }
+        else if(CPUloadFound){
+            float load = getCPU();
+            char lload[1024];
+            char finalLoad[1024] = " ";
+
+            sprintf(lload, "%.0f%%\n", load);
+            strcpy(finalLoad, writeIn);
+            strcat(finalLoad, lload);
+
+            send(sock2, finalLoad, strlen(finalLoad), 0);
+            close(sock2);
+        }
+        else if(CPUnameFound){
+            char* CPUname = CPUNAME();
+
+            char finalCPUname[1024] = " ";
+            strcpy(finalCPUname, writeIn);
+            strcat(finalCPUname, CPUname);
+
+            send(sock2, finalCPUname, strlen(finalCPUname), 0);
+            free(CPUname);
+            close(sock2);
+        }
+        else{
+            send(sock2, badReq, strlen(badReq), 0);
+            close(sock2);
+        }
+
     }
 
-    
 }
 
 int main(int argc, char *argv[])
