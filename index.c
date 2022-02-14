@@ -4,10 +4,11 @@
 #include<stdio.h>
 
 #include <arpa/inet.h>
-#include <netdb.h> /* getprotobyname */
+#include <netdb.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <unistd.h>
+//TODO reduce ammount of #includes
 
 void getCPU(){
     char str1[100], str2[100];
@@ -77,17 +78,40 @@ void CPUNAME(){
     system("cat /proc/cpuinfo | grep 'model name' | head -n 1 | sed 's/^.*: //'");
 }
 
-void CreateSocket(){
-    socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    //setsockopt(sock, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &option, sizeof(option)); //TODO
+int CreateSocket(){
+    int option = 1;
+    int sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    setsockopt(sock, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &option, sizeof(option));
+    return sock;
 }
 
-int main()
-{
-    getCPU();
-    getNAME();
-    CPUNAME();
+void establishConnection(int portno){
+    int sock = CreateSocket();
+    if(sock == -1){
+        printf("ERROR - connection not established");   //TODO
+    }
+
+    struct sockaddr_in address;
+    address.sin_family = AF_INET;
+    address.sin_port = htons(portno);
+    address.sin_addr.s_addr = INADDR_ANY;
+    int addrlen = sizeof(address);
+
+    bind(sock, (struct sockaddr *)&address, sizeof(address));
+    listen(sock, 1);
+
+    char buffer[1024];
+    while(1){
+        accept(sock, (struct sockaddr *)&address, (socklen_t*)&addrlen);        
+    }
 
     
+}
+
+int main(int argc, char *argv[])
+{
+    int portno = atoi(argv[1]);
+
+    establishConnection(portno);
 }
  
