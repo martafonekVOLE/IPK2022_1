@@ -8,13 +8,13 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <unistd.h>
-//TODO reduce ammount of #includes
+
 
 float getCPU(){
     char str1[100], str2[100];
     char* first[10];
     char* second[10];
-    int i = 0, j = 0;
+    int i = 0;
 
     FILE* fp = fopen("/proc/stat","r");
     fgets(str1,100,fp);
@@ -106,25 +106,38 @@ void establishConnection(int portno){
 
     char buffer[1024];
     int valread;
+    char runtime[1024] = "Server is running\n";
+    char ports[1024];
 
-    char runtime[1024] = "Server is running under port";
+    sprintf(ports, "Listening to port: %d\n", portno);
+    strcat(runtime, ports);
+    puts(runtime);
+
     while(1){
         int sock2 = accept(sock, (struct sockaddr *)&address, (socklen_t*)&addrlen);
-        valread = read(sock2, buffer, 1024);   
-        puts(runtime);
-        //TODO go through buffer and find "hostname"
+        valread = read(sock2, buffer, 1024);
+
+        if(valread == -1){
+            //TODO chyba
+        }
+
         char *writeIn = "HTTP/1.1 200 OK\r\nContent-Type: text/plain;\r\n\r\n";
         char *badReq = "HTTP/1.1 400 Bad Request\r\nContent-Type: text/plain;\r\n\r\n";
         char *hostnameFound = strstr(buffer, "hostname");
         char *CPUloadFound = strstr(buffer, "load");
         char *CPUnameFound = strstr(buffer, "cpu-name");
+
         if(hostnameFound){
             char* hostname = getNAME();
             char finalHostname[1024] = " ";
+            char echoHost[1024] = "\n\nRequested hostname.";
+
+            puts(echoHost);
+
             strcpy(finalHostname, writeIn);
             strcat(finalHostname, hostname);
 
-            send(sock2, finalHostname, strlen(finalHostname), 0);    //TODO concat str
+            send(sock2, finalHostname, strlen(finalHostname), 0); 
             free(hostname);
             close(sock2);
         }
@@ -132,6 +145,9 @@ void establishConnection(int portno){
             float load = getCPU();
             char lload[1024];
             char finalLoad[1024] = " ";
+            char echoLoad[1024] = "\n\nRequested CPU load.";
+
+            puts(echoLoad);
 
             sprintf(lload, "%.0f%%\n", load);
             strcpy(finalLoad, writeIn);
@@ -142,8 +158,11 @@ void establishConnection(int portno){
         }
         else if(CPUnameFound){
             char* CPUname = CPUNAME();
-
             char finalCPUname[1024] = " ";
+            char echoCPU[1024] = "\n\nRequested CPU name.";
+
+            puts(echoCPU);
+
             strcpy(finalCPUname, writeIn);
             strcat(finalCPUname, CPUname);
 
@@ -152,6 +171,10 @@ void establishConnection(int portno){
             close(sock2);
         }
         else{
+            char echoFail[1024] = "\n\nInvalid request.";
+
+            puts(echoFail);
+
             send(sock2, badReq, strlen(badReq), 0);
             close(sock2);
         }
