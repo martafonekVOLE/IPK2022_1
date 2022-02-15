@@ -6,6 +6,8 @@ různé služby (sekce [Poskytované služby](#services)).
 
 Po zavolání služby server oznámí, jaký zpracovává požadavek a uživateli se dostane odpovědi.
 
+Server byl vyvíjen pro operační systémy **Linux** (Ubuntu 20.04 LTS).
+
 ## Způsoby komunikace
 Se serverem je možné komunikovat **primárně pomocí webového prohlížeče**.
 
@@ -17,32 +19,45 @@ Dále lze komunikovat pomocí nástrojů `curl` a `wget` (sekce [Příklady](#ex
 + `load`     - zobrazí informaci o aktuálním vytížení procesoru (*GET http://servername:12345/load*)
 
 ## Způsob spuštění projektu
-1. Rozbalit archiv xpechm00.zip (`unzip xpechm00.zip`)
-2. Spustit soubor makefile (`make`)
-3. Spustit server (`./hinfosvc 12345`) 
-> ***Pozor!*** Je třeba uvést port, na kterém bude server naslouchat (`12345`)
+1. Rozbalit archiv xpechm00.zip
+2. Spustit soubor makefile 
+3. Spustit server  
+> ***Pozor!*** Je třeba uvést port, na kterém bude server naslouchat (12345)
+
+```bash
+$ unzip xpechm00.zip
+$ make
+$ ./hinfosvc 12345
+```
 
 ## Způsob zasílání požadavků (příklady) <a name="examples"></a>
 > Příklady jsou uvádět na *localhost* s naslouchaným portem *12345*
 
 ### Zjištění jména
-Použití **Curl** `curl http://localhost:12345/hostname`
-
-Použití **Wget** `wget http://localhost:12344/hostname`
+Použití **Curl** nebo **Wget**
+```bash
+$ curl http://localhost:12345/hostname
+$ wget http://localhost:12345/hostname
+```
 
 Použitím **prohlížeče** - zadat do URL `http://localhost:12344/hostname`
 
 ### Zjištění jména procesoru
-Použití **Curl** `curl http://localhost:12345/cpu-name`
+Použití **Curl** nebo **Wget**
 
-Použití **Wget** `wget http://localhost:12344/cpu-name`
+```bash
+$ curl http://localhost:12345/cpu-name
+$ wget http://localhost:12345/cpu-name
+```
 
 Použitím **prohlížeče** - zadat do URL `http://localhost:12344/cpu-name`
 
 ### Zjištění vytížení procesoru
-Použití **Curl** `curl http://localhost:12345/load`
-
-Použití **Wget** `wget http://localhost:12344/load`
+Použití **Curl** nebo **Wget**
+```bash
+$ curl http://localhost:12345/load
+$ wget http://localhost:12345/load
+```
 
 Použitím **prohlížeče** - zadat do URL `http://localhost:12344/load`
 
