@@ -8,6 +8,8 @@ Po zavolání služby server oznámí, jaký zpracovává požadavek a uživatel
 
 Server byl vyvíjen pro operační systémy **Linux** (Ubuntu 20.04 LTS).
 
+Autorem projektu je: [Martin Pech](https://mpech.net/developer)
+
 ## Způsoby komunikace
 Se serverem je možné komunikovat **primárně pomocí webového prohlížeče**.
 
