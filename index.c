@@ -92,7 +92,8 @@ int CreateSocket(){
 void establishConnection(int portno){
     int sock = CreateSocket();
     if(sock == -1){
-        printf("ERROR - connection not established");   //TODO
+        printf("Error while creating socket - connection not established\nPlease try again\n"); 
+        exit(1);
     }
 
     struct sockaddr_in address;
@@ -118,7 +119,9 @@ void establishConnection(int portno){
         valread = read(sock2, buffer, 1024);
 
         if(valread == -1){
-            //TODO chyba
+            printf("Error while reading socket\nPlease try again");
+            exit(1);
+            
         }
 
         char *writeIn = "HTTP/1.1 200 OK\r\nContent-Type: text/plain;\r\n\r\n";
@@ -185,6 +188,11 @@ void establishConnection(int portno){
 
 int main(int argc, char *argv[])
 {
+    if(argc < 2){
+        printf("Invalid request, you forgot to specify port!\nExample: ./hinfosvc 12345\n");
+        exit(1);
+    }
+
     int portno = atoi(argv[1]);
 
     establishConnection(portno);
