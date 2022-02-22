@@ -9,3 +9,6 @@ default:
 
 clear:
 	rm *.c hinfosvc makefile
+
+run:
+	./hinfosvc 12345

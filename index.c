@@ -2,6 +2,7 @@
 #include<string.h>
 #include<unistd.h>
 #include<stdio.h>
+#include<ctype.h>
 
 #include <arpa/inet.h>
 #include <netdb.h>
@@ -174,11 +175,16 @@ void establishConnection(int portno){
             close(sock2);
         }
         else{
-            char echoFail[1024] = "\n\nInvalid request.";
+            char echoFail[1024] = "\n\nBad request.";
+            char finalFail[1024] = " ";
+            char echoFailPrint[1024] = "Bad Request";
 
             puts(echoFail);
 
-            send(sock2, badReq, strlen(badReq), 0);
+            strcpy(finalFail, badReq);
+            strcat(finalFail, echoFailPrint);
+
+            send(sock2, finalFail, strlen(finalFail), 0);
             close(sock2);
         }
 
@@ -195,6 +201,11 @@ int main(int argc, char *argv[])
 
     int portno = atoi(argv[1]);
 
-    establishConnection(portno);
+    if(portno == 0){
+        printf("Invalid port number given!\n");
+    }
+    else{
+        establishConnection(portno);
+    }
 }
  
